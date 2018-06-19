@@ -13,7 +13,7 @@ class AddWorkerEntryPointPlugin {
 
   apply(compiler) {
     const { id, entry, filename, chunkFilename, plugins } = this.options;
-    compiler.hooks.make.tapAsync('AddWorkerEntryPointPlugin', (compilation, callback) => {
+    const addWorkerEntryPoint = (compilation, callback) => {
       const outputOptions = {
         filename,
         chunkFilename,
@@ -28,7 +28,12 @@ class AddWorkerEntryPointPlugin {
       ]);
       plugins.forEach((plugin) => plugin.apply(childCompiler));
       childCompiler.runAsChild(callback);
-    });
+    }
+    if ('hooks' in compiler) {
+      compiler.hooks.make.tapAsync('AddWorkerEntryPointPlugin', addWorkerEntryPoint);
+    } else {
+      compiler.plugin('make', addAppendLoader);
+    }
   }
 }
 
